@@ -15,6 +15,9 @@ controller.connectNodes(controller.nodes[0],controller.nodes[1]) #Node_0 subscri
 client = Client(origin_node=controller.nodes[1]) #Node_1 is the origin Node
 client.make_request(service="A")
 
+sleep(1)
+
+print(controller.nodes[0].active_auctions_bidding)
 
 
 sleep(5)

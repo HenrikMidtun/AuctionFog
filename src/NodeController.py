@@ -7,14 +7,14 @@ class NodeController:
         self.index = 0
         self.nodes = []
         
-    def createNodes(self, amount_nodes, service_probabilities: dict):
+    def createNodes(self, amount_nodes, service_probabilities: dict, strength=80):
         new_nodes = []
         for i in range(amount_nodes):
             node_services = {}
             for k,v in service_probabilities.items():
                 decider = random.random()*100
                 if decider < v:
-                    node_services[k] = 0 #Setting the bidding price
+                    node_services[k] = min(int(random.randrange(80,121,1)/100*strength),100) #Setting the bidding price
             n = Node(client_id="Node_{}".format(self.index), services=node_services)
             self.index+=1
             new_nodes.append(n)
