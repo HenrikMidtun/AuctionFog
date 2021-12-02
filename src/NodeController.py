@@ -14,7 +14,7 @@ class NodeController:
             for k,v in service_probabilities.items():
                 decider = random.random()*100
                 if decider < v:
-                    node_services[k] = 0
+                    node_services[k] = 0 #Setting the bidding price
             n = Node(client_id="Node_{}".format(self.index), services=node_services)
             self.index+=1
             new_nodes.append(n)
