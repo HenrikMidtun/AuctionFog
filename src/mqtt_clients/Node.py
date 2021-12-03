@@ -16,7 +16,8 @@ class Node:
         self.room_pointer = 0 #Pointing to next auction room to use
         self.active_auctions_bidding = {} #Topics where the Node is currently participating in an auction including largest current bid, e.g., {Node_0/auctions/room_2: 48}
         self.active_auctions_auctioning = {} #Topics where the Node is currently acting as an auctioneer including largest current bid
-
+        self.auction_period = 2
+        self.joining_period = 1
         """
             Paho MQTT Client
         """
@@ -95,18 +96,22 @@ class Node:
         self.active_auctions_auctioning[auction_room] = 0 #Setting current highest bid to zero
         self.room_pointer+=1
 
-        #Start a thread that keeps a countdown for when the auction should be closed
-        auction_timeout = Timer(interval=2, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
-        auction_timeout.start()
+        #A thread that keeps a countdown for when the auction should start
+        t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
+        t_auction_start.start()
+        #A thread that keeps a countdown for when the auction should be closed
+        t_auction_timeout = Timer(interval=self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
+        t_auction_timeout.start()
     
     def join_auction(self, service, room, auctioneer):
         print("{}: Joining auction held by {} for {} in {}.".format(self.client_id, auctioneer, service, room))
         auction_room = "{}/auction/{}".format(auctioneer, room)
         self.client.subscribe(auction_room, qos=2)
         self.active_auctions_bidding[auction_room] = {"highest_bid":0, "service":service, "bid":0} #Setting current highest bid to zero
-        self.make_bid(auction_room=auction_room, service=service)
+        #self.make_bid(auction_room=auction_room, service=service)
 
-    def make_bid(self, auction_room, service):
+    def make_bid(self, auction_room):
+        service = self.active_auctions_bidding[auction_room]["service"]
         bid = self.services[service]
         self.publish(auction_room, bid)
         self.active_auctions_bidding[auction_room]["bid"] = bid
@@ -126,10 +131,17 @@ class Node:
             #Remove auction from active list
             if situation == "auctioneer":
                 active_auctions.pop(auction_room)
-            else:
+            elif situation == "bidder":
                 final_standing = active_auctions.pop(auction_room)
                 self.decide_winner(final_standing)
-            
+        
+        #The auction has begun and the bidding can start
+        elif message == "start":
+            if situation == "auctioneer":
+                pass
+            elif situation == "bidder":
+                self.make_bid(auction_room)
+
         #A new bid has been posted
         else:
             bid = int(message)
