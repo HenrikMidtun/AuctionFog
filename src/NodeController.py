@@ -1,12 +1,13 @@
 from mqtt_clients.Node import Node
 import random
+from RequestMonitor import RequestMonitor
 
 class NodeController:
 
-    def __init__(self):
+    def __init__(self, request_monitor: RequestMonitor):
         self.index = 0
         self.nodes = []
-    
+        self.request_monitor = request_monitor
 
     """
         Creates N amount of Nodes that have a certain probability to contain a service.
@@ -21,15 +22,19 @@ class NodeController:
                 decider = random.random()*100
                 if decider < v:
                     node_services[k] = min(int(random.randrange(80,121,1)/100*strength),100) #Setting the bidding price
-            n = Node(client_id="Node_{}".format(self.index), services=node_services)
+            n = Node(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=node_services)
             self.index+=1
             new_nodes.append(n)
         
         self.nodes = self.nodes+new_nodes
         return new_nodes
 
+    """
+        This creates a single Node with no random attributes.
+        This is useful for small case examples to test certain cases.
+    """
     def createNode(self, services_bids: dict):
-        new_node = Node(client_id="Node_{}".format(self.index), services=services_bids)
+        new_node = Node(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
         self.nodes.append(new_node)
         return new_node
