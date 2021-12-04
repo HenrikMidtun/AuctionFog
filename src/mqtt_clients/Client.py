@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from mqtt_clients.Node import Node
+from Catalogue import Catalogue
 
 # The callback for when the client receives a CONNACK response from the server.
 
@@ -31,4 +32,5 @@ class Client:
 
     def make_request(self, service):
         self.client.publish(self.request_topic, service)
+        print("Client: Made a request to {} for service {} which has an asking price of {}.".format(self.origin_node, service, Catalogue.services[service]["asking_price"]))
 

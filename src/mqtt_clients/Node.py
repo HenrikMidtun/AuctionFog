@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from threading import Timer
+from Catalogue import Catalogue
 
 # The callback for when the client receives a CONNACK response from the server.
 
@@ -44,7 +45,7 @@ class Node:
         #Incomming request from Client
         if msg.topic == "{}/request".format(self.client_id):
             requested_service = msg.payload.decode("utf-8") #Convert from bytes to string
-            self.handle_request(requested_service=requested_service)
+            self.handle_item(service=requested_service)
 
         #Message in an auction that the Node is hosting 
         if msg.topic in self.active_auctions_auctioning:
@@ -72,18 +73,21 @@ class Node:
         for node in self.connections:
             self.client.subscribe("{}/auction".format(node), qos=2) #Subscribe to neighbour Node's auctions
 
-    #Decide to process service or create and auction item 
-    def handle_request(self, requested_service):
-        #make internal bid
-        #auction if below
-        if requested_service in self.services:
-            if self.services[requested_service] < 200: #Checking against asking price, Set realistically later!
-                self.hold_auction(requested_service)
+    #Decide to process service or auction item 
+    def handle_item(self, service):
+        if service in self.services:
+            if self.services[service] < Catalogue.services[service]["asking_price"]: #Checking against asking price, Set realistically later!
+                self.hold_auction(service)
             else:
-                #process service
+                self.process_service(service)
                 pass
         else:
-            self.hold_auction(requested_service)
+            self.hold_auction(service)
+    
+    def process_service(self, service):
+        service_processing_duration = Catalogue.services[service]["std_process_t"]
+        t_service_process = Timer(interval=service_processing_duration, function=lambda:print("{}: Done processing service {}!".format(self.client_id, service)))
+        t_service_process.start()
             
     #Create auction for item on "Node_id/auction/room_nr item_description"
     def hold_auction(self, service):
@@ -100,9 +104,10 @@ class Node:
         t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
         t_auction_start.start()
         #A thread that keeps a countdown for when the auction should be closed
-        t_auction_timeout = Timer(interval=self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
+        t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
         t_auction_timeout.start()
     
+    #Node joins an auction by subscribing to auctioneers auction topic
     def join_auction(self, service, room, auctioneer):
         print("{}: Joining auction held by {} for {} in {}.".format(self.client_id, auctioneer, service, room))
         auction_room = "{}/auction/{}".format(auctioneer, room)
@@ -110,13 +115,7 @@ class Node:
         self.active_auctions_bidding[auction_room] = {"highest_bid":0, "service":service, "bid":0} #Setting current highest bid to zero
         #self.make_bid(auction_room=auction_room, service=service)
 
-    def make_bid(self, auction_room):
-        service = self.active_auctions_bidding[auction_room]["service"]
-        bid = self.services[service]
-        self.publish(auction_room, bid)
-        self.active_auctions_bidding[auction_room]["bid"] = bid
-        print("{}: Made a bid of {} in auction room {}".format(self.client_id, bid, auction_room))
-
+    #The message handler for active auctions
     def handle_auction(self, auction_room, message, situation):
         if situation == "auctioneer":
             active_auctions = self.active_auctions_auctioning
@@ -133,6 +132,7 @@ class Node:
                 active_auctions.pop(auction_room)
             elif situation == "bidder":
                 final_standing = active_auctions.pop(auction_room)
+                self.client.unsubscribe(auction_room)
                 self.decide_winner(final_standing)
         
         #The auction has begun and the bidding can start
@@ -151,11 +151,20 @@ class Node:
             elif situation == "bidder":
                 if bid > active_auctions[auction_room]["highest_bid"]:
                     active_auctions[auction_room]["highest_bid"] = bid
+
+    #Make bid according to strength
+    def make_bid(self, auction_room):
+        service = self.active_auctions_bidding[auction_room]["service"]
+        bid = self.services[service]
+        self.publish(auction_room, bid)
+        self.active_auctions_bidding[auction_room]["bid"] = bid
+        print("{}: Made a bid of {} in auction room {}.".format(self.client_id, bid, auction_room))
     
+    #The Node checks if it has won an auction and responds accordingly
     def decide_winner(self, final_standing):
         if final_standing["highest_bid"] == final_standing["bid"]:
-            print("{}: I won!".format(self.client_id))
-            #Do something
+            #print("{}: I won!".format(self.client_id))
+            self.handle_item(service=final_standing["service"])
 
     #Subscribe to neighbour Node
     def add_connection(self, node_id: str):
@@ -166,6 +175,7 @@ class Node:
         else:
             print("{}: Already Connected to {}.".format(self.client_id, node_id))
 
+    #QoS level 2 publish method
     def publish(self, topic, payload):
         self.client.publish(topic, payload, qos=2)
 
