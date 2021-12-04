@@ -84,9 +84,13 @@ class Node:
         else:
             self.hold_auction(service)
     
+    #Calculates processing time and "processes" service in its own thread
     def process_service(self, service):
-        service_processing_duration = Catalogue.services[service]["std_process_t"]
-        t_service_process = Timer(interval=service_processing_duration, function=lambda:print("{}: Done processing service {}!".format(self.client_id, service)))
+        bid = self.services[service]
+        std_processing_duration = Catalogue.services[service]["std_process_t"]
+        constant = 0.5
+        process_duration = std_processing_duration*(1+constant*(50-bid)/50)
+        t_service_process = Timer(interval=process_duration, function=lambda:print("{}: Done processing service {}!".format(self.client_id, service)))
         t_service_process.start()
             
     #Create auction for item on "Node_id/auction/room_nr item_description"
