@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from threading import Timer
-from Catalogue import Catalogue
+from Configuration import Catalogue, AuctionConfig
 from RequestMonitor import RequestMonitor
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -19,8 +19,8 @@ class Node:
         self.room_pointer = 0 #Pointing to next auction room to use
         self.active_auctions_bidding = {} #Topics where the Node is currently participating in an auction including largest current bid, e.g., {Node_0/auctions/room_2: 48}
         self.active_auctions_auctioning = {} #Topics where the Node is currently acting as an auctioneer including largest current bid
-        self.auction_period = 2
-        self.joining_period = 1
+        self.auction_period = AuctionConfig.auction_period #Duration from start signal of auction until end signal
+        self.joining_period = AuctionConfig.joining_period #Duration from publication of auction until start signal
         """
             Paho MQTT Client
         """

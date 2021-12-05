@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from mqtt_clients.Node import Node
-from Catalogue import Catalogue
+from Configuration import Catalogue
 from RequestMonitor import RequestMonitor
 
 # The callback for when the client receives a CONNACK response from the server.

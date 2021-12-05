@@ -5,3 +5,7 @@ class Catalogue:
         "B":{"asking_price":40, "std_process_t":3}, 
         "C":{"asking_price":50, "std_process_t":3}
     }
+
+class AuctionConfig:
+    auction_period = 2
+    joining_period = 1
