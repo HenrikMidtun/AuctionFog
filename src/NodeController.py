@@ -1,4 +1,6 @@
 from mqtt_clients.Node import Node
+from mqtt_clients.ChoiceNode import ChoiceNode
+
 import random
 from RequestMonitor import RequestMonitor
 
@@ -13,6 +15,8 @@ class NodeController:
         Creates N amount of Nodes that have a certain probability to contain a service.
         The given strength sets a baseline and any bid the Node produces is in a +-20% range from the strength given.
         The randomness is good to produce unique cases that involves many Nodes
+
+        Creates an equal amount of auction, random choice, and Battistoni Nodes !Not implemented!
     """
     def createNodes(self, amount_nodes, service_probabilities: dict, strength=80):
         new_nodes = []
@@ -33,16 +37,23 @@ class NodeController:
         This creates a single Node with no random attributes.
         This is useful for small case examples to test certain cases.
     """
-    def createNode(self, services_bids: dict):
+    def createAuctionNode(self, services_bids: dict):
         new_node = Node(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
         self.nodes.append(new_node)
         return new_node
 
-    def connectNodes(self, subscribing_node: Node, target_node: Node, bidirectional=False):
+    def createChoiceNode(self, services_bids: dict):
+        new_node = ChoiceNode(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
+        self.index+=1
+        self.nodes.append(new_node)
+        return new_node
+
+    #Connects Nodes to each other, default is one-directional relationship
+    def connectNodes(self, connecting_node: Node, target_node: Node, bidirectional=False):
         valid_nodes=True
-        if subscribing_node not in self.nodes:
-            print("{} does not exist!".format(subscribing_node))
+        if connecting_node not in self.nodes:
+            print("{} does not exist!".format(connecting_node))
             valid_nodes=False
         if target_node not in self.nodes:
             print("{} does not exist!".format(target_node))
@@ -50,4 +61,4 @@ class NodeController:
         if not valid_nodes:
             return
         
-        subscribing_node.add_connection(target_node.client_id)
+        connecting_node.add_connection(target_node.client_id)

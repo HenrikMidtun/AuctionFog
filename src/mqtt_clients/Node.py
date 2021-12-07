@@ -78,13 +78,13 @@ class Node:
     #Decide to process service or auction item 
     def handle_item(self, service, request_id):
         if service in self.services:
-            if self.services[service] < Catalogue.services[service]["asking_price"]: #Checking against asking price, Set realistically later!
+            if self.services[service] < Catalogue.services[service]["asking_price"]: #Checking against asking price
                 self.hold_auction(service=service, request_id=request_id)
             else:
                 self.process_service(service=service, request_id=request_id)
                 pass
         else:
-            self.hold_auction(service)
+            self.hold_auction(service=service, request_id=request_id)
     
     #Calculates processing time and "processes" service in its own thread
     def process_service(self, service, request_id):
@@ -104,7 +104,7 @@ class Node:
             )
         auction_room = "{}/auction/{}".format(self.client_id, self.rooms[self.room_pointer])
         self.active_auctions_auctioning[auction_room] = 0 #Setting current highest bid to zero
-        self.room_pointer+=1
+        self.set_room_pointer()
 
         #A thread that keeps a countdown for when the auction should start
         t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
@@ -112,6 +112,12 @@ class Node:
         #A thread that keeps a countdown for when the auction should be closed
         t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
         t_auction_timeout.start()
+    
+    #Increments room_pointer
+    def set_room_pointer(self):
+        self.room_pointer += 1
+        if self.room_pointer == len(self.rooms):
+            self.room_pointer = 0
     
     #Node joins an auction by subscribing to auctioneers auction topic
     def join_auction(self, request_id, service, room, auctioneer):
