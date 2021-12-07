@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from threading import Timer
-from Configuration import Catalogue, AuctionConfig
+from Configuration import Catalogue, AuctionConfig, ProcessingConfig
 from RequestMonitor import RequestMonitor
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -15,7 +15,7 @@ class Node:
         self.request_monitor = request_monitor
         self.services = services
         self.connections = [] #List of Node ids that should be subscribed to, i.e., Node_1
-        self.rooms = ["room_{}".format(i) for i in range(10)] #Auction rooms [room_0, room_1, ...]
+        self.rooms = ["room_{}".format(i) for i in range(100)] #Auction rooms [room_0, room_1, ...]
         self.room_pointer = 0 #Pointing to next auction room to use
         self.active_auctions_bidding = {} #Topics where the Node is currently participating in an auction including largest current bid, e.g., {Node_0/auctions/room_2: 48}
         self.active_auctions_auctioning = {} #Topics where the Node is currently acting as an auctioneer including largest current bid
@@ -91,8 +91,7 @@ class Node:
         self.request_monitor.start_processing(request_id=int(request_id), node_id=self.client_id)
         bid = self.services[service]
         std_processing_duration = Catalogue.services[service]["std_process_t"]
-        constant = 0.5
-        process_duration = std_processing_duration*(1+constant*(50-bid)/50)
+        process_duration = std_processing_duration*(1+ProcessingConfig.processing_constant*(50-bid)/50)
         t_service_process = Timer(interval=process_duration, function=self.request_monitor.complete_processing, kwargs={"request_id":int(request_id), "node_id":self.client_id})
         t_service_process.start()
             

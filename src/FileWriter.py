@@ -4,7 +4,7 @@ from RequestMonitor import RequestMonitor
 class RunWriter:
 
     def __init__(self, request_monitor:RequestMonitor):
-        self.folder_location = "/home/house/AuctionFog/output"
+        self.folder_location = "/home/house/AuctionFog/output/runs"
         self.active_filename = None
         self.request_monitor = request_monitor
         self.header = ['request_id', 'completion_time', 'total_processing_time']
@@ -23,7 +23,6 @@ class RunWriter:
         with open("{}/{}.csv".format(self.folder_location, self.active_filename), 'a') as f:
             writer = csv.writer(f)
             writer.writerow([request_id, completion_time, total_processing_time])
-            
 
 """
 Want to create a file for each run.
