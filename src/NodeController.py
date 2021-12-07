@@ -1,4 +1,4 @@
-from mqtt_clients.Node import Node
+from mqtt_clients.AuctionNode import AuctionNode
 from mqtt_clients.ChoiceNode import ChoiceNode
 
 import random
@@ -26,7 +26,7 @@ class NodeController:
                 decider = random.random()*100
                 if decider < v:
                     node_services[k] = min(int(random.randrange(80,121,1)/100*strength),100) #Setting the bidding price
-            n = Node(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=node_services)
+            n = AuctionNode(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=node_services)
             self.index+=1
             new_nodes.append(n)
         
@@ -38,7 +38,7 @@ class NodeController:
         This is useful for small case examples to test certain cases.
     """
     def createAuctionNode(self, services_bids: dict):
-        new_node = Node(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
+        new_node = AuctionNode(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
         self.nodes.append(new_node)
         return new_node
@@ -50,7 +50,7 @@ class NodeController:
         return new_node
 
     #Connects Nodes to each other, default is one-directional relationship
-    def connectNodes(self, connecting_node: Node, target_node: Node, bidirectional=False):
+    def connectNodes(self, connecting_node, target_node, bidirectional=False):
         valid_nodes=True
         if connecting_node not in self.nodes:
             print("{} does not exist!".format(connecting_node))

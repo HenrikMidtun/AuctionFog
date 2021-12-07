@@ -1,5 +1,6 @@
 from time import sleep
-from mqtt_clients.Node import Node
+from mqtt_clients.AuctionNode import AuctionNode
+from mqtt_clients.ChoiceNode import ChoiceNode
 from mqtt_clients.Client import Client
 from NodeController import NodeController
 from RequestMonitor import RequestMonitor
@@ -43,14 +44,14 @@ print(request_monitor.get_completion_time(req_id))
 request_monitor = RequestMonitor()
 controller = NodeController(request_monitor=request_monitor)
 
-n0 = controller.createChoiceNode(services_bids={"A": 40})
-n1 = controller.createChoiceNode(services_bids={"A": 40})
-n2 = controller.createChoiceNode(services_bids={"A": 40})
+n0 = controller.createAuctionNode(services_bids={"A": 40})
+n1 = controller.createAuctionNode(services_bids={"A": 40})
+n2 = controller.createAuctionNode(services_bids={"A": 60})
 
 controller.connectNodes(n1,n0)
 controller.connectNodes(n2,n1)
 
-client = Client(origin_node=n0, request_monitor=request_monitor)
+client = Client(origin_node_id=n0.client_id, request_monitor=request_monitor)
 
 req_ids = []
 for i in range(1):

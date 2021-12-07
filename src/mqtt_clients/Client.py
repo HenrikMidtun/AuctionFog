@@ -1,6 +1,5 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
-from mqtt_clients.Node import Node
 from Configuration import Catalogue
 from RequestMonitor import RequestMonitor
 
@@ -8,11 +7,11 @@ from RequestMonitor import RequestMonitor
 
 class Client:
 
-    def __init__(self, origin_node: Node, request_monitor: RequestMonitor):
+    def __init__(self, origin_node_id, request_monitor: RequestMonitor):
         """
             Application
         """
-        self.origin_node = origin_node
+        self.origin_node = origin_node_id
         self.request_monitor = request_monitor
         self.request_topic = "{}/request".format(self.origin_node)
         """

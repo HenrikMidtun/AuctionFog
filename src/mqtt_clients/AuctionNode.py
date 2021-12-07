@@ -6,7 +6,7 @@ from RequestMonitor import RequestMonitor
 
 # The callback for when the client receives a CONNACK response from the server.
 
-class Node:
+class AuctionNode:
     def __init__(self, client_id, request_monitor: RequestMonitor, services:dict={"A": 100}):
         """
             Application
@@ -193,5 +193,3 @@ class Node:
     def __repr__(self) -> str:
         return self.client_id
 
-if __name__ == "__main__":
-    no = Node(client_id=Node)
