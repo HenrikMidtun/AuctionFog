@@ -82,7 +82,6 @@ class AuctionNode:
                 self.hold_auction(service=service, request_id=request_id)
             else:
                 self.process_service(service=service, request_id=request_id)
-                pass
         else:
             self.hold_auction(service=service, request_id=request_id)
     
@@ -103,8 +102,8 @@ class AuctionNode:
             "{},{},{}".format(request_id, service, self.rooms[self.room_pointer])
             )
         auction_room = "{}/auction/{}".format(self.client_id, self.rooms[self.room_pointer])
-        self.active_auctions_auctioning[auction_room] = 0 #Setting current highest bid to zero
-        self.set_room_pointer()
+        self.active_auctions_auctioning[auction_room] = {"highest_bid":0, "service":service, "bid":0, "request_id": request_id} #Setting current highest bid to zero
+        self.increment_room_pointer()
 
         #A thread that keeps a countdown for when the auction should start
         t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
@@ -113,8 +112,7 @@ class AuctionNode:
         t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
         t_auction_timeout.start()
     
-    #Increments room_pointer
-    def set_room_pointer(self):
+    def increment_room_pointer(self):
         self.room_pointer += 1
         if self.room_pointer == len(self.rooms):
             self.room_pointer = 0
@@ -136,46 +134,53 @@ class AuctionNode:
             print("No such situation, '{}', possible at the moment.".format(situation))
             return
 
-        #The auction has timed out and ended
+        #The auction has ended
         if message == "end":
-            #Remove auction from active list
+            final_standing = active_auctions.pop(auction_room)
+            #If auctioneer wins the auction at a deficit, it must process the service if it has it.
             if situation == "auctioneer":
-                active_auctions.pop(auction_room)
+                if self.decide_winner(final_standing=final_standing):
+                    if final_standing["service"] in self.services: 
+                        self.process_service(service=final_standing["service"], request_id=final_standing["request_id"])
+                    else:
+                        print("{}: Service {} can not be delivered.".format(self.client_id, final_standing["service"]))
+            #Winning bidders can choose if they will re-auction the item or process it.
             elif situation == "bidder":
-                final_standing = active_auctions.pop(auction_room)
+                if self.decide_winner(final_standing=final_standing):
+                    self.handle_item(service=final_standing["service"], request_id=final_standing["request_id"])
                 self.client.unsubscribe(auction_room)
-                self.decide_winner(final_standing)
         
         #The auction has begun and the bidding can start
         elif message == "start":
-            if situation == "auctioneer":
-                pass
-            elif situation == "bidder":
-                self.make_bid(auction_room)
+            service = active_auctions[auction_room]["service"]
+            bid = self.make_bid(auction_room=auction_room, service=service)
+            #The auctioneer must have a definitive win in the auction to process the service
+            if situation == "bidder":
+                active_auctions[auction_room]["bid"] = bid
+            elif situation == "auctioneer":
+                active_auctions[auction_room]["bid"] = bid-1
+
 
         #A new bid has been posted
         else:
             bid = int(message)
-            if situation == "auctioneer":
-                if bid > active_auctions[auction_room]:
-                    active_auctions[auction_room] = bid
-            elif situation == "bidder":
-                if bid > active_auctions[auction_room]["highest_bid"]:
+            if bid > active_auctions[auction_room]["highest_bid"]:
                     active_auctions[auction_room]["highest_bid"] = bid
 
-    #Make bid according to strength
-    def make_bid(self, auction_room):
-        service = self.active_auctions_bidding[auction_room]["service"]
-        bid = self.services[service]
-        self.publish(auction_room, bid)
-        self.active_auctions_bidding[auction_room]["bid"] = bid
-        print("{}: Made a bid of {} in auction room {}.".format(self.client_id, bid, auction_room))
-    
     #The Node checks if it has won an auction and responds accordingly
     def decide_winner(self, final_standing):
-        if final_standing["highest_bid"] == final_standing["bid"]:
-            #print("{}: I won!".format(self.client_id))
-            self.handle_item(service=final_standing["service"], request_id=final_standing["request_id"])
+        return final_standing["highest_bid"] == final_standing["bid"]
+
+    #Decides the appropriate bid size, publishes bid and returns bid
+    def make_bid(self, auction_room, service):
+        bid = self.services[service]
+        if service in self.services:
+            bid = self.services[service]
+        else:
+            bid = 0
+        self.publish(auction_room, bid)
+        print("{}: Made a bid of {} in auction room {}.".format(self.client_id, bid, auction_room))
+        return bid
 
     #Subscribe to neighbour Node
     def add_connection(self, node_id: str):
