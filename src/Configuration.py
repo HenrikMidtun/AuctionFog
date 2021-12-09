@@ -7,8 +7,8 @@ class Catalogue:
     }
 
 class AuctionConfig:
-    auction_period = 0.5
-    joining_period = 0.3
+    auction_period = 0.3
+    joining_period = 0.2
 
 class ProcessingConfig:
     processing_constant = 0.5
