@@ -60,14 +60,13 @@ class ChoiceNode:
     def add_connection(self, target_node):
         self.publish("{}/connect".format(target_node), self.client_id)
 
-    #Decide to process service or auction item 
+    #Decide to process service or propagate item 
     def handle_item(self, service, request_id):
         if service in self.services:
             if self.services[service] < Catalogue.services[service]["asking_price"] and len(self.neighbours) != 0: #Checking against asking price
                 self.propagate_request(service=service, request_id=request_id)
             else:
                 self.process_service(service=service, request_id=request_id)
-                pass
         else:
             self.propagate_request(service, request_id=request_id)
     

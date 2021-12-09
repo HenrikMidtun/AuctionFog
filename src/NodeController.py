@@ -1,5 +1,6 @@
 from mqtt_clients.AuctionNode import AuctionNode
 from mqtt_clients.ChoiceNode import ChoiceNode
+from mqtt_clients.BattistoniNode import BattistoniNode
 
 import random
 from RequestMonitor import RequestMonitor
@@ -45,6 +46,12 @@ class NodeController:
 
     def createChoiceNode(self, services_bids: dict):
         new_node = ChoiceNode(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
+        self.index+=1
+        self.nodes.append(new_node)
+        return new_node
+    
+    def createBattistoniNode(self, services_bids: dict):
+        new_node = BattistoniNode(client_id="Node_{}".format(self.index), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
         self.nodes.append(new_node)
         return new_node

@@ -3,8 +3,6 @@ from paho.mqtt.client import MQTTv5
 from Configuration import Catalogue
 from RequestMonitor import RequestMonitor
 
-# The callback for when the client receives a CONNACK response from the server.
-
 class Client:
 
     def __init__(self, origin_node_id, request_monitor: RequestMonitor):

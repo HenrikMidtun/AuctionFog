@@ -44,9 +44,9 @@ print(request_monitor.get_completion_time(req_id))
 request_monitor = RequestMonitor()
 controller = NodeController(request_monitor=request_monitor)
 
-n0 = controller.createAuctionNode(services_bids={"A": 40})
-n1 = controller.createAuctionNode(services_bids={"A": 40})
-n2 = controller.createAuctionNode(services_bids={"A": 60})
+n0 = controller.createBattistoniNode(services_bids={"A": 80})
+n1 = controller.createBattistoniNode(services_bids={"A": 20})
+n2 = controller.createBattistoniNode(services_bids={"A": 50})
 
 controller.connectNodes(n1,n0)
 controller.connectNodes(n2,n1)

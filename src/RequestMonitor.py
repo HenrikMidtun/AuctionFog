@@ -24,6 +24,10 @@ class RequestMonitor:
         print("RequestMonitor: {} has completed the processing of request {}.".format(node_id, request_id))
         self.requests[request_id].process_complete(node_id)
     
+    def abort_processing(self, request_id, node_id):
+        print("RequestMonitor: {} has aborted the processing of request {}.".format(node_id, request_id))
+        self.requests[request_id].process_complete(node_id)
+
     #Returns a timedelta of the complete processing time for all currently finished Nodes
     def get_total_processing_time(self, request_id):
         return self.requests[request_id].total_time

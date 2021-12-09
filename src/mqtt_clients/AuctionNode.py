@@ -4,8 +4,6 @@ from threading import Timer
 from Configuration import Catalogue, AuctionConfig, ProcessingConfig
 from RequestMonitor import RequestMonitor
 
-# The callback for when the client receives a CONNACK response from the server.
-
 class AuctionNode:
     def __init__(self, client_id, request_monitor: RequestMonitor, services:dict={"A": 100}):
         """
