@@ -15,8 +15,8 @@ class AuctionNode:
         self.connections = [] #List of Node ids that should be subscribed to, i.e., Node_1
         self.rooms = ["room_{}".format(i) for i in range(100)] #Auction rooms [room_0, room_1, ...]
         self.room_pointer = 0 #Pointing to next auction room to use
-        self.active_auctions_bidding = {} #Topics where the Node is currently participating in an auction including largest current bid, e.g., {Node_0/auctions/room_2: 48}
-        self.active_auctions_auctioning = {} #Topics where the Node is currently acting as an auctioneer including largest current bid
+        self.active_auctions_bidding = {} #Topics where the Node is currently participating in an auction including largest current bid,this Node's bid, and amount of bids, e.g., {Node_0/auctions/room_2: {"highest_bid":48, "bid":36, "n_bids":2}}
+        self.active_auctions_auctioning = {} #Topics where the Node is currently acting as an auctioneer including largest current bid and this Node's bid, and amount of bids.
         self.auction_period = AuctionConfig.auction_period #Duration from start signal of auction until end signal
         self.joining_period = AuctionConfig.joining_period #Duration from publication of auction until start signal
         """
@@ -32,7 +32,7 @@ class AuctionNode:
         Callbacks
     """
     def on_connect(self, client, userdata, flags, rc, properties=None):
-        #print(str(rc)+ " {} connected with services {}".format(client._client_id, self.services))
+        print(str(rc)+ " {} connected with services {}".format(client._client_id, self.services))
     
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
@@ -90,6 +90,7 @@ class AuctionNode:
         std_processing_duration = Catalogue.services[service]["std_process_t"]
         process_duration = std_processing_duration*(1+ProcessingConfig.processing_constant*(50-bid)/50)
         t_service_process = Timer(interval=process_duration, function=self.request_monitor.complete_processing, kwargs={"request_id":int(request_id), "node_id":self.client_id})
+        t_service_process.setDaemon(True)
         t_service_process.start()
             
     #Create auction for item on "Node_id/auction/room_nr item_description"
@@ -100,14 +101,16 @@ class AuctionNode:
             "{},{},{}".format(request_id, service, self.rooms[self.room_pointer])
             )
         auction_room = "{}/auction/{}".format(self.client_id, self.rooms[self.room_pointer])
-        self.active_auctions_auctioning[auction_room] = {"highest_bid":0, "service":service, "bid":0, "request_id": request_id} #Setting current highest bid to zero
+        self.active_auctions_auctioning[auction_room] = {"highest_bid":0, "service":service, "n_bids":0, "bid":0, "request_id": request_id} #Setting current highest bid to zero
         self.increment_room_pointer()
 
         #A thread that keeps a countdown for when the auction should start
         t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
+        t_auction_start.setDaemon(True)
         t_auction_start.start()
         #A thread that keeps a countdown for when the auction should be closed
         t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
+        t_auction_timeout.setDaemon(True)
         t_auction_timeout.start()
     
     def increment_room_pointer(self):
@@ -120,7 +123,7 @@ class AuctionNode:
         print("{}: Joining auction on request {} held by {} for {} in {}.".format(self.client_id, request_id, auctioneer, service, room))
         auction_room = "{}/auction/{}".format(auctioneer, room)
         self.client.subscribe(auction_room, qos=2)
-        self.active_auctions_bidding[auction_room] = {"highest_bid":0, "service":service, "bid":0, "request_id": request_id} #Setting current highest bid to zero
+        self.active_auctions_bidding[auction_room] = {"highest_bid":0, "service":service, "n_bids":0, "bid":0, "request_id": request_id} #Setting current highest bid to zero
 
     #The message handler for active auctions
     def handle_auction(self, auction_room, message, situation):
@@ -137,6 +140,8 @@ class AuctionNode:
             final_standing = active_auctions.pop(auction_room)
             #If auctioneer wins the auction at a deficit, it must process the service if it has it.
             if situation == "auctioneer":
+                if final_standing["n_bids"] == 1: #If the only bid is from the auctioneer
+                    self.process_service(service=final_standing["service"], request_id=final_standing["request_id"])
                 if self.decide_winner(final_standing=final_standing):
                     if final_standing["service"] in self.services: 
                         self.process_service(service=final_standing["service"], request_id=final_standing["request_id"])
@@ -161,6 +166,7 @@ class AuctionNode:
 
         #A new bid has been posted
         else:
+            active_auctions[auction_room]["n_bids"] = active_auctions[auction_room]["n_bids"]+1
             bid = int(message)
             if bid > active_auctions[auction_room]["highest_bid"]:
                     active_auctions[auction_room]["highest_bid"] = bid
@@ -185,13 +191,17 @@ class AuctionNode:
         if node_id not in self.connections:
             self.connections.append(node_id)
             self.client.subscribe("{}/auction".format(node_id), qos=2) #Subscribe to neighbour Node's auctions
-            print("{}: Connected to {}.".format(self.client_id, node_id))
+            #print("{}: Connected to {}.".format(self.client_id, node_id))
         else:
-            print("{}: Already Connected to {}.".format(self.client_id, node_id))
-
+            #print("{}: Already Connected to {}.".format(self.client_id, node_id))
+            pass
     #QoS level 2 publish method
     def publish(self, topic, payload):
         self.client.publish(topic, payload, qos=2)
+    
+    def update_services(self, new_services):
+        print("{}: Services updated to {}.".format(self.client_id, new_services))
+        self.services = new_services
 
     def __repr__(self) -> str:
         return self.client_id

@@ -39,7 +39,7 @@ class ChoiceNode:
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(self, client, userdata, msg):
-        print("{}: {} {}".format(self.client_id, msg.topic, str(msg.payload)))
+        #print("{}: {} {}".format(self.client_id, msg.topic, str(msg.payload)))
 
         #Incomming request from Client
         if msg.topic == "{}/request".format(self.client_id):
@@ -77,12 +77,13 @@ class ChoiceNode:
         std_processing_duration = Catalogue.services[service]["std_process_t"]
         process_duration = std_processing_duration*(1+ProcessingConfig.processing_constant*(50-bid)/50)
         t_service_process = Timer(interval=process_duration, function=self.request_monitor.complete_processing, kwargs={"request_id":int(request_id), "node_id":self.client_id})
+        t_service_process.setDaemon(True)
         t_service_process.start()
 
     #Publishes request to a random neighbour
     def propagate_request(self, service, request_id):
         neighbour = self.choose_neighbour()
-        self.client.publish(
+        self.publish(
             "{}/request".format(neighbour), 
             "{},{}".format(request_id, service)
             )
@@ -96,13 +97,18 @@ class ChoiceNode:
     def add_neighbour(self, neighbour_id: str):
         if neighbour_id not in self.neighbours:
             self.neighbours.append(neighbour_id)
-            print("{}: Included {} as a neighbour.".format(self.client_id, neighbour_id))
+            #print("{}: Included {} as a neighbour.".format(self.client_id, neighbour_id))
         else:
-            print("{}: Already have {} as a neighbour.".format(self.client_id, neighbour_id))
-
+            #print("{}: Already have {} as a neighbour.".format(self.client_id, neighbour_id))
+            pass
+        
     #QoS level 2 publish method
     def publish(self, topic, payload):
         self.client.publish(topic, payload, qos=2)
+
+    def update_services(self, new_services):
+        print("{}: Services updated to {}.".format(self.client_id, new_services))
+        self.services = new_services
 
     def __repr__(self) -> str:
         return self.client_id

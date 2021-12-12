@@ -2,7 +2,7 @@ from platform import node
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTv5
 from threading import Timer
-from Configuration import Catalogue, ProcessingConfig
+from Configuration import Catalogue, ProcessingConfig, BattistoniConfig
 from RequestMonitor import RequestMonitor
 import copy
 
@@ -58,7 +58,15 @@ class BattistoniNode:
             self.increment_room_pointer()
             request_room_topic = self.propagate_request(service=service, request_id=request_id, room_id=room_id, parent_id=None) #publishes onto self.client_id/X req_id, room_id
             self.handle_item(service=service, request_id=request_id, room_topic=request_room_topic)
-        
+
+            #Make sure that every request is satisfied at some point
+            t_force_completion = Timer(
+                interval=BattistoniConfig.grace_constant*Catalogue.services[service]["std_process_t"],
+                function=self.process_service, 
+                kwargs={"service": service, "request_id":int(request_id), "room_topic":request_room_topic})
+            t_force_completion.setDaemon(True)
+            t_force_completion.start()
+            
         #Incomming new request from Node, subscribe, propagate and start processing 
         for node_id in self.connections:
             for service in self.services:
@@ -79,13 +87,13 @@ class BattistoniNode:
                 parent_room = self.active_rooms.pop(room)
                 if parent_room != None:
                     self.client.unsubscribe(parent_room)
-                    self.client.publish(parent_room, "end")
+                    self.publish(parent_room, "end")
         
         #End signal in parent room
         currently_active_rooms = copy.copy(self.active_rooms)
         for room, parent_room in currently_active_rooms.items():
             if msg.topic == parent_room and msg.payload.decode("utf-8") == "end":
-                self.client.publish(room, "end")
+                self.publish(room, "end")
     """
         Node Methods
     """
@@ -128,13 +136,14 @@ class BattistoniNode:
         std_processing_duration = Catalogue.services[service]["std_process_t"]
         process_duration = std_processing_duration*(1+ProcessingConfig.processing_constant*(50-bid)/50)
         t_service_process = Timer(interval=process_duration, function=self.complete_processing, kwargs={"request_id":int(request_id), "room_topic":room_topic})
+        t_service_process.setDaemon(True)
         t_service_process.start()
         self.active_processes[room_topic] = {"t_process": t_service_process, "request_id": int(request_id)}
 
     #Function in timer thread has been executed and processing is completed
     def complete_processing(self, request_id, room_topic):
         self.active_processes.pop(room_topic)
-        self.client.publish(room_topic, "end")
+        self.publish(room_topic, "end")
         self.request_monitor.complete_processing(request_id=request_id, node_id=self.client_id)
 
     #Cancel timer thread for process and notify request monitor
@@ -150,6 +159,10 @@ class BattistoniNode:
     #QoS level 2 publish method
     def publish(self, topic, payload):
         self.client.publish(topic, payload, qos=2)
+    
+    def update_services(self, new_services):
+        print("{}: Services updated to {}.".format(self.client_id, new_services))
+        self.services = new_services
 
     def __repr__(self) -> str:
         return self.client_id

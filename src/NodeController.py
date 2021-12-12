@@ -9,34 +9,27 @@ class NodeController:
 
     def __init__(self, request_monitor: RequestMonitor):
         self.index = 0
-        self.nodes = []
+        #self.nodes = []
         self.request_monitor = request_monitor
+        random.seed(0)
 
     """
-        Creates 3*N amount of Nodes that have a certain probability to contain a service.
-        The given strength sets a baseline and any bid the Node produces is in a +-20% range from the strength given.
+        Creates 3 Nodes that have a certain probability to contain a service.
+        The given strength sets a baseline and any bid the Node produces is in a +-50% range from the strength given.
         The randomness is good to produce unique cases that involves many Nodes
 
-        Creates an equal amount of auction, random choice, and Battistoni Nodes
+        Creates auction, random choice, and Battistoni Nodes with equal bids.
     """
-    def createNodes(self, amount_nodes, service_probabilities: dict, strength=80):
-        auction_nodes = []
-        choice_nodes = []
-        battistoni_nodes = []
-        for i in range(amount_nodes):
-            node_services = {}
-            for k,v in service_probabilities.items():
-                decider = random.random()*100
-                if decider < v:
-                    node_services[k] = min(int(random.randrange(80,121,1)/100*strength),100) #Setting the bidding price
-            auction_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=node_services)
-            choice_node = ChoiceNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=node_services)
-            battistoni_node = BattistoniNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=node_services)
-            auction_nodes.append(auction_node)
-            choice_nodes.append(choice_node)
-            battistoni_nodes.append(battistoni_node)
-
-        return {"auction_nodes": auction_nodes, "choice_nodes": choice_nodes, "battistoni_nodes": battistoni_nodes}
+    def createNodes(self, service_probabilities: dict, strength=50):
+        nodes = {}
+        services = self.getRandomBids(service_probabilities=service_probabilities, strength=strength)
+        auction_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+        nodes["auction"] = auction_node
+        choice_node = ChoiceNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+        nodes["choice"] = choice_node
+        battistoni_node = BattistoniNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+        nodes["battistoni"] = battistoni_node
+        return nodes
 
     """
         This creates a single Node with no random attributes.
@@ -45,34 +38,37 @@ class NodeController:
     def createAuctionNode(self, services_bids: dict):
         new_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
-        self.nodes.append(new_node)
         return new_node
 
     def createChoiceNode(self, services_bids: dict):
         new_node = ChoiceNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
-        self.nodes.append(new_node)
         return new_node
     
     def createBattistoniNode(self, services_bids: dict):
         new_node = BattistoniNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services_bids)
         self.index+=1
-        self.nodes.append(new_node)
         return new_node
 
     #Connects Nodes to each other, default is one-directional relationship
     def connectNodes(self, connecting_node, target_node, bidirectional=False):
-        valid_nodes=True
-        if connecting_node not in self.nodes:
-            print("{} does not exist!".format(connecting_node))
-            valid_nodes=False
-        if target_node not in self.nodes:
-            print("{} does not exist!".format(target_node))
-            valid_nodes=False
-        if not valid_nodes:
-            return
-        
         connecting_node.add_connection(target_node.client_id)
+
+    """
+        Generates random bids for the given service probabilities and strength
+    """
+    def getRandomBids(self, service_probabilities: dict, strength=50):
+        node_servicebids = {}
+        for k,v in service_probabilities.items():
+            decider = random.random()*100
+            if decider < v:
+                node_servicebids[k] = min(int(random.randrange(100-50,100+51,1)/100*strength),100) #Setting the bidding price, may switch to std distribution
+        return node_servicebids
+
+    def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50):
+        node_servicebids = self.getRandomBids(service_probabilities=service_probabilities, strength=strength)
+        for node in node_objs:
+            node.update_services(node_servicebids)
 
     def getIndex(self):
         index = self.index

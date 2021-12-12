@@ -12,3 +12,6 @@ class AuctionConfig:
 
 class ProcessingConfig:
     processing_constant = 0.5
+
+class BattistoniConfig:
+    grace_constant = 2 #should be time it takes to find out that the service wont be, e.g., max processing time ~ 2*T_0
