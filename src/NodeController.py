@@ -73,9 +73,23 @@ class NodeController:
             if decider < v:
                 node_servicebids[k] = min(int(random.randrange(100-50,100+51,1)/100*strength),100) #Setting the bidding price, may switch to std distribution
         return node_servicebids
+    
+    """
+        Picks a random *rounded* integer from a normal distribution centered around the given strength.
+        The random integer returned is within [0,100] because it represents a bid
+        Note, 68% of values fall within 1 standard deviation, 95% within 2 standard deviations, 99.9% within 3 standard deviations
+
+    """
+    def getNormalisedRandomBids(self, service_probabilities: dict, strength=50):
+        mean = strength
+        std_dev = 15
+        while True:
+            x = round(random.normalvariate(mean, std_dev))
+            if x >= 0 and x <= 100:
+                return x
 
     def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50):
-        node_servicebids = self.getRandomBids(service_probabilities=service_probabilities, strength=strength)
+        node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities, strength=strength)
         for node in node_objs:
             node.update_services(node_servicebids)
 

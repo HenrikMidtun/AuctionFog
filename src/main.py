@@ -99,4 +99,9 @@ def create_plot_net1(factory:NetworkController, request_monitor:RequestMonitor):
         sleep(3)
 
 
-create_plot_net2(network_controller,request_monitor, n_type="battistoni")
+#create_plot_net2(network_controller,request_monitor, n_type="battistoni")
+bids = []
+for i in range(100):
+    bids.append(node_controller.getNormalisedRandomBids({"A":100}, strength=70))
+bids.sort()
+print(bids)
