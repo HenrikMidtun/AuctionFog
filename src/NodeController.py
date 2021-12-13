@@ -83,10 +83,16 @@ class NodeController:
     def getNormalisedRandomBids(self, service_probabilities: dict, strength=50):
         mean = strength
         std_dev = 15
-        while True:
-            x = round(random.normalvariate(mean, std_dev))
-            if x >= 0 and x <= 100:
-                return x
+        node_servicebids = {}
+        for k,v in service_probabilities.items():
+            decider = random.random()*100
+            if decider < v:
+                while True:
+                    x = round(random.normalvariate(mean, std_dev))
+                    if x >= 0 and x <= 100:
+                        node_servicebids[k] = x
+                        break
+        return node_servicebids
 
     def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50):
         node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities, strength=strength)

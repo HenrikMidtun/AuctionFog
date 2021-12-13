@@ -8,8 +8,10 @@ class NetworkController:
         self.controller = controller
         self.networks = []
 
-
-#[{0: {'auction': Node_0}, 1: {'auction': Node_1}, 2: {'auction': Node_2}, 3: {'auction': Node_3}, 4: {'auction': Node_4}, 5: {'auction': Node_5}}, {0: {'auction': Node_6}, 1: {'auction': Node_7}, 2: {'auction': Node_8}, 3: {'auction': Node_9}, 4: {'auction': Node_10}, 5: {'auction': Node_11}}, {0: {'auction': Node_12}, 1: {'auction': Node_13}, 2: {'auction': Node_14}, 3: {'auction': Node_15}, 4: {'auction': Node_16}, 5: {'auction': Node_17}}, {0: {'auction': Node_18}, 1: {'auction': Node_19}, 2: {'auction': Node_20}, 3: {'auction': Node_21}, 4: {'auction': Node_22}, 5: {'auction': Node_23}}, {0: {'auction': Node_24}, 1: {'auction': Node_25}, 2: {'auction': Node_26}, 3: {'auction': Node_27}, 4: {'auction': Node_28}, 5: {'auction': Node_29}}]
+    """
+    Update bids on services for all Nodes.
+    The differently typed Nodes that represent the same network will have the same updated bids
+    """
     def updateNetworkServices(self, service_probabilities={"A":100}, strength=50):
         for fog in self.networks:
             for index, nodes in fog.items():
@@ -96,23 +98,3 @@ class NetworkController:
         self.controller.connectNodes(n6,n2)
         battistoni_node = n0
         return [auction_node, choice_node, battistoni_node]
-
-    #A Random binomial tree, 7 Nodes, 3 levels deep, random bids
-    def create_random_net1(self):
-        nodes = self.controller.createNodes(amount_nodes=7, service_probabilities={"A":80}, strength=50)
-        auction_nodes = nodes["auction_nodes"]
-        choice_nodes = nodes["choice_nodes"]
-        battistoni_nodes = nodes["battistoni_nodes"]
-        for i in range(3):
-            if i == 0:
-                n = auction_nodes
-            elif i == 1:
-                n = choice_nodes
-            elif i == 2:
-                n = battistoni_nodes
-            self.controller.connectNodes(n[2],n[0])
-            self.controller.connectNodes(n[3],n[1])
-            self.controller.connectNodes(n[4],n[1])
-            self.controller.connectNodes(n[5],n[2])
-            self.controller.connectNodes(n[6],n[2])
-        return [auction_nodes[0], choice_nodes[0], battistoni_nodes[0]]
