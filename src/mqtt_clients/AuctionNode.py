@@ -138,15 +138,11 @@ class AuctionNode:
         #The auction has ended
         if message == "end":
             final_standing = active_auctions.pop(auction_room)
-            #If auctioneer wins the auction at a deficit, it must process the service if it has it.
             if situation == "auctioneer":
                 if final_standing["n_bids"] == 1: #If the only bid is from the auctioneer
                     self.process_service(service=final_standing["service"], request_id=final_standing["request_id"])
-                if self.decide_winner(final_standing=final_standing):
-                    if final_standing["service"] in self.services: 
+                if self.decide_winner(final_standing=final_standing): #If the auctioneer wins the auction it should process the service and not auction it
                         self.process_service(service=final_standing["service"], request_id=final_standing["request_id"])
-                    else:
-                        print("{}: Service {} can not be delivered.".format(self.client_id, final_standing["service"]))
             #Winning bidders can choose if they will re-auction the item or process it.
             elif situation == "bidder":
                 if self.decide_winner(final_standing=final_standing):
@@ -157,12 +153,7 @@ class AuctionNode:
         elif message == "start":
             service = active_auctions[auction_room]["service"]
             bid = self.make_bid(auction_room=auction_room, service=service)
-            #The auctioneer must have a definitive win in the auction to process the service
-            if situation == "bidder":
-                active_auctions[auction_room]["bid"] = bid
-            elif situation == "auctioneer":
-                active_auctions[auction_room]["bid"] = bid-1
-
+            active_auctions[auction_room]["bid"] = bid
 
         #A new bid has been posted
         else:
