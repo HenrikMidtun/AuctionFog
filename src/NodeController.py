@@ -11,6 +11,7 @@ class NodeController:
         self.index = 0
         #self.nodes = []
         self.request_monitor = request_monitor
+        self.node_classes = {"auction": AuctionNode, "choice": ChoiceNode, "battistoni": BattistoniNode}
         random.seed(0)
 
     """
@@ -20,15 +21,23 @@ class NodeController:
 
         Creates auction, random choice, and Battistoni Nodes with equal bids.
     """
-    def createNodes(self, service_probabilities: dict, strength=50):
+    def createNodes(self, service_probabilities: dict, strength=50, n_type="all"):
+        print(n_type)
+        if n_type not in ["all","auction", "choice", "battistoni"]:
+            print("{} is not a valid type ['all', 'auction', 'choice', 'battistoni'".format(n_type))
+            return 
         nodes = {}
         services = self.getRandomBids(service_probabilities=service_probabilities, strength=strength)
-        auction_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
-        nodes["auction"] = auction_node
-        choice_node = ChoiceNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
-        nodes["choice"] = choice_node
-        battistoni_node = BattistoniNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
-        nodes["battistoni"] = battistoni_node
+        if n_type == "all":
+            auction_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+            nodes["auction"] = auction_node
+            choice_node = ChoiceNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+            nodes["choice"] = choice_node
+            battistoni_node = BattistoniNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+            nodes["battistoni"] = battistoni_node
+        else:
+            node = self.node_classes[n_type](client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
+            nodes[n_type] = node
         return nodes
 
     """

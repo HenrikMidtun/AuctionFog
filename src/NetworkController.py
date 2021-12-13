@@ -1,3 +1,4 @@
+from typing import no_type_check
 from RequestMonitor import RequestMonitor
 from NodeController import NodeController
 
@@ -33,15 +34,15 @@ class NetworkController:
 
         *Intended origin Node is always given as 0 in the structure
     """
-    def create_network(self, structure: dict, services={"A":100}, strength=50):
+    def create_network(self, structure: dict, n_type="all", services={"A":100}, strength=50):
         created_nodes = {}
         origin_nodes = {}
         for k,v in structure.items():
             if k not in created_nodes.keys():
-                created_nodes[k] = self.controller.createNodes(service_probabilities=services, strength=strength)
+                created_nodes[k] = self.controller.createNodes(service_probabilities=services, strength=strength, n_type=n_type)
             for node in v:
                 if node not in created_nodes.keys():
-                    created_nodes[node] = self.controller.createNodes(service_probabilities=services, strength=strength)
+                    created_nodes[node] = self.controller.createNodes(service_probabilities=services, strength=strength, n_type=n_type)
                     for type, node_obj in created_nodes[node].items():
                         self.controller.connectNodes(node_obj, created_nodes[k][type])
         origin_nodes = created_nodes[0] #Assuming that intended origin Node is always given as 0 in the structure

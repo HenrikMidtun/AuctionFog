@@ -19,8 +19,9 @@ network_controller = NetworkController(node_controller)
 
 """
     Creates a network with randomized bids and set structure
+    Creates plots for these runs
 """
-def create_plot_net2(factory: NetworkController, request_monitor: RequestMonitor):
+def create_plot_net2(factory: NetworkController, request_monitor: RequestMonitor, n_type="all"):
     filenames = ["randombids_auction", "randombids_choice", "randombids_battistoni"]
     writer = RunWriter(request_monitor=request_monitor)
     for f_name in filenames:
@@ -32,12 +33,13 @@ def create_plot_net2(factory: NetworkController, request_monitor: RequestMonitor
         Create Nodes of all types and make connections according to structure
     """
     structure = {
-                0: [1,2,3],
-                2: [4,5],
+                0: [1,2],
+                1: [3,4],
+                2: [5,6]
             }
     origin_nodes = {"auction":[], "choice":[], "battistoni":[]}
-    for k in range(5): #Batch size
-        for type, node_obj in network_controller.create_network(structure=structure).items():
+    for k in range(5): #Batch size, number of networks of each type run simultaneously 
+        for type, node_obj in network_controller.create_network(structure=structure, n_type=n_type).items():
             origin_nodes[type].append(node_obj)
 
     """
@@ -51,7 +53,7 @@ def create_plot_net2(factory: NetworkController, request_monitor: RequestMonitor
                 requests[type].append(req_id)
 
         sleep(6) #Allow Nodes to finish up processes
-        network_controller.updateNetworkServices()
+        network_controller.updateNetworkServices() #Update bids (and services) of Nodes
 
     """
         Write requests to file
@@ -97,4 +99,4 @@ def create_plot_net1(factory:NetworkController, request_monitor:RequestMonitor):
         sleep(3)
 
 
-create_plot_net2(network_controller,request_monitor)
+create_plot_net2(network_controller,request_monitor, n_type="battistoni")
