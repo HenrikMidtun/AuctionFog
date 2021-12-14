@@ -33,7 +33,7 @@ def run_net2(factory: NetworkController, request_monitor: RequestMonitor, filena
         Make Requests to origin Nodes and update all Node bids in batches.
     """
     client = Client(request_monitor=request_monitor)
-    for i in range(50): #Amount of RUNs
+    for i in range(10): #Amount of RUNs
         for type, o_nodes in origin_nodes.items():
             for node in o_nodes:
                 req_id = client.make_request(origin_node_id=node.client_id, service="A")

@@ -57,6 +57,11 @@ class AuctionNode:
             message = msg.payload.decode("utf-8")
             self.handle_auction(auction_room=msg.topic, message=message, situation="bidder")
 
+        #Node has initiated an auction
+        if msg.topic == "{}/auction".format(self.client_id):
+            [request_id, service, room_id] = msg.payload.decode("utf-8").split(",")
+            self.start_auction(room_id=room_id)
+
         #New auctions at neighbouring Nodes
         for neighbour in self.connections:
             if msg.topic == "{}/auction".format(neighbour):
@@ -77,11 +82,11 @@ class AuctionNode:
     def handle_item(self, service, request_id):
         if service in self.services:
             if self.services[service] < Catalogue.services[service]["asking_price"]: #Checking against asking price
-                self.hold_auction(service=service, request_id=request_id)
+                self.initiate_auction(service=service, request_id=request_id)
             else:
                 self.process_service(service=service, request_id=request_id)
         else:
-            self.hold_auction(service=service, request_id=request_id)
+            self.initiate_auction(service=service, request_id=request_id)
     
     #Calculates processing time and "processes" service in its own thread
     def process_service(self, service, request_id):
@@ -93,8 +98,8 @@ class AuctionNode:
         t_service_process.setDaemon(True)
         t_service_process.start()
             
-    #Create auction for item on "Node_id/auction/room_nr item_description"
-    def hold_auction(self, service, request_id):
+    #Direct neighbours to auction for item on "Node_id/auction/room_nr"
+    def initiate_auction(self, service, request_id):
         print("{}: Holding auction for request {} of service {} in {}.".format(self.client_id, request_id, service, self.rooms[self.room_pointer]))
         self.client.publish(
             "{}/auction".format(self.client_id), 
@@ -104,15 +109,13 @@ class AuctionNode:
         self.active_auctions_auctioning[auction_room] = {"highest_bid":0, "service":service, "n_bids":0, "bid":0, "request_id": request_id} #Setting current highest bid to zero
         self.increment_room_pointer()
 
+    def start_auction(self, room_id):
+        auction_room = "{}/auction/{}".format(self.client_id, room_id)
         #A thread that keeps a countdown for when the auction should start
         t_auction_start = Timer(interval=self.joining_period, function=self.publish, kwargs={"topic":auction_room, "payload":"start"})
         t_auction_start.setDaemon(True)
         t_auction_start.start()
-        #A thread that keeps a countdown for when the auction should be closed
-        t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
-        t_auction_timeout.setDaemon(True)
-        t_auction_timeout.start()
-    
+
     def increment_room_pointer(self):
         self.room_pointer += 1
         if self.room_pointer == len(self.rooms):
@@ -154,6 +157,12 @@ class AuctionNode:
             service = active_auctions[auction_room]["service"]
             bid = self.make_bid(auction_room=auction_room, service=service)
             active_auctions[auction_room]["bid"] = bid
+
+            if situation == "auctioneer":
+                #A thread that keeps a countdown for when the auction should be closed
+                t_auction_timeout = Timer(interval=self.joining_period+self.auction_period, function=self.publish, kwargs={"topic":auction_room, "payload":"end"})
+                t_auction_timeout.setDaemon(True)
+                t_auction_timeout.start()
 
         #A new bid has been posted
         else:
