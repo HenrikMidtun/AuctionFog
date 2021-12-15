@@ -80,9 +80,8 @@ class NodeController:
         Note, 68% of values fall within 1 standard deviation, 95% within 2 standard deviations, 99.9% within 3 standard deviations
 
     """
-    def getNormalisedRandomBids(self, service_probabilities: dict, strength=50):
+    def getNormalisedRandomBids(self, service_probabilities: dict, strength=50, std_dev=15):
         mean = strength
-        std_dev = 15
         node_servicebids = {}
         for k,v in service_probabilities.items():
             decider = random.random()*100
@@ -94,8 +93,8 @@ class NodeController:
                         break
         return node_servicebids
 
-    def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50):
-        node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities, strength=strength)
+    def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50, std_dev=15):
+        node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities, strength=strength, std_dev=std_dev)
         for node in node_objs:
             node.update_services(node_servicebids)
 

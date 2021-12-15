@@ -12,13 +12,13 @@ class NetworkController:
     Update bids on services for all Nodes.
     The differently typed Nodes that represent the same network will have the same updated bids
     """
-    def updateNetworkServices(self, service_probabilities={"A":100}, strength=50):
+    def updateNetworkServices(self, service_probabilities={"A":100}, strength=50, std_dev=15):
         for fog in self.networks:
             for index, nodes in fog.items():
                 nodes_to_update = []
                 for node in nodes.values():
                     nodes_to_update.append(node)
-                self.controller.updateNodeServices(nodes_to_update, service_probabilities=service_probabilities, strength=strength)
+                self.controller.updateNodeServices(nodes_to_update, service_probabilities=service_probabilities, strength=strength, std_dev=std_dev)
 
     """
     Creates three directed graphs of Nodes, one graph for each type
