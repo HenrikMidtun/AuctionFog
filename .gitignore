@@ -132,3 +132,8 @@ dmypy.json
 output/*
 !output/plots/README.md
 !output/runs/README.md
+!output/runs/bids/*
+!output/runs/sd/*
+!output/runs/topology/*
+!output/runs/ap/*
+

@@ -117,8 +117,8 @@ node_controller = NodeController(request_monitor=request_monitor)
 network_controller = NetworkController(node_controller)
 bar_grapher = BarGrapher()
 
-filename = "Net1Runs500Meanbid50SD15"
-subtitle = "Network 1, 500 runs, mean bid = 50, SD=15"
-run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=15)
+filename = "Net1Runs500Meanbid50SD20"
+subtitle = "Network 1, 500 runs, mean bid = 50, SD=20"
+run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
 bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
 bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
