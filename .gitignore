@@ -130,8 +130,8 @@ dmypy.json
 
 #Output files
 output/*
-!output/plots/README.md
-!output/runs/README.md
+!output/plots/.gitkeep
+!output/runs/.gitkeep
 !output/runs/bids/*
 !output/runs/sd/*
 !output/runs/topology/*
