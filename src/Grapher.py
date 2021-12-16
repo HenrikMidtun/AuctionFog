@@ -48,7 +48,7 @@ class BarGrapher:
         plt.ylabel('Time [sec]', fontweight ='bold', fontsize = 13, labelpad=15)
         plt.xticks([r + barWidth for r in range(len(plot_data[0]))], groups)
 
-        plt.legend()
+        plt.legend(bbox_to_anchor= (1.02, 1), loc="upper left")
         plt.savefig("/home/house/AuctionFog/output/plots/compare_{}_completiontime.png".format(graph_filename), bbox_inches='tight')
 
     def graph_comparison_proc_t(self, run_sources, graph_filename, groups, label, subtitle=None):
@@ -82,7 +82,7 @@ class BarGrapher:
         plt.ylabel('Time [sec]', fontweight ='bold', fontsize = 13, labelpad=15)
         plt.xticks([r + barWidth for r in range(len(plot_data[0]))], groups)
 
-        plt.legend()
+        plt.legend(bbox_to_anchor= (1.02, 1), loc="upper left")
         plt.savefig("/home/house/AuctionFog/output/plots/compare_{}_processingtime.png".format(graph_filename), bbox_inches='tight')
 
     def graph_completion_time(self, run_filename, graph_filename=None, subtitle=None):
