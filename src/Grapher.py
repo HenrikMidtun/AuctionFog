@@ -10,6 +10,81 @@ class BarGrapher:
         self.run_folder = "/home/house/AuctionFog/output/runs"
         self.run_headers = ['completion_time', 'total_processing_time']
 
+    """
+        Creats a grouped bar chart of multiple runs. 
+        The run sources and groups must be ordered in the same way for labels to be correct.
+
+        EX.    run_sources = [filename_30,filename_50,filename_70]
+               groups = [30,50,70]
+    """
+    def graph_comparison_compl_t(self, run_sources, graph_filename, groups, label, subtitle=None):
+        plot_data = [[],[],[]]
+        for run_file in run_sources:
+            data_t_delta = self.get_data(run_file)
+            for k,v in data_t_delta.items():
+                completion_time = v["avg_completion_time"].total_seconds()
+                if k == "auction":
+                    plot_data[0].append(completion_time)
+                elif k == "choice":
+                    plot_data[1].append(completion_time)
+                elif k == "battistoni":
+                    plot_data[2].append(completion_time)
+        barWidth = 0.25
+        fig, ax = plt.subplots(figsize =(8, 6))
+        bar1 = np.arange(len(plot_data[0]))
+        bar2 = [x + barWidth for x in bar1]
+        bar3 = [x + barWidth for x in bar2]
+
+        plt.bar(bar1, plot_data[0], color ="#82B366", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Auction')
+        plt.bar(bar2, plot_data[1], color ="#D6B656", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Random Choice')
+        plt.bar(bar3, plot_data[2], color ="#B85450", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Modified Battistoni')
+
+        mid = (fig.subplotpars.right + fig.subplotpars.left)/2
+        plt.suptitle("Completion Times", x=mid, size='xx-large', weight="bold")
+        if subtitle != None:
+            ax.set_title(subtitle, style="italic")
+
+        plt.xlabel(label, fontweight ='bold', fontsize = 13, labelpad=15)
+        plt.ylabel('Time [sec]', fontweight ='bold', fontsize = 13, labelpad=15)
+        plt.xticks([r + barWidth for r in range(len(plot_data[0]))], groups)
+
+        plt.legend()
+        plt.savefig("/home/house/AuctionFog/output/plots/compare_{}_completiontime.png".format(graph_filename), bbox_inches='tight')
+
+    def graph_comparison_proc_t(self, run_sources, graph_filename, groups, label, subtitle=None):
+        plot_data = [[],[],[]]
+        for run_file in run_sources:
+            data_t_delta = self.get_data(run_file)
+            for k,v in data_t_delta.items():
+                processing_time = v["avg_processing_time"].total_seconds()
+                if k == "auction":
+                    plot_data[0].append(processing_time)
+                elif k == "choice":
+                    plot_data[1].append(processing_time)
+                elif k == "battistoni":
+                    plot_data[2].append(processing_time)
+        barWidth = 0.25
+        fig, ax = plt.subplots(figsize =(8, 6))
+        bar1 = np.arange(len(plot_data[0]))
+        bar2 = [x + barWidth for x in bar1]
+        bar3 = [x + barWidth for x in bar2]
+
+        plt.bar(bar1, plot_data[0], color ="#82B366", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Auction')
+        plt.bar(bar2, plot_data[1], color ="#D6B656", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Random Choice')
+        plt.bar(bar3, plot_data[2], color ="#B85450", width = barWidth, edgecolor ="black", linewidth=0.5, label ='Modified Battistoni')
+
+        mid = (fig.subplotpars.right + fig.subplotpars.left)/2
+        plt.suptitle("Processing Times", x=mid, size='xx-large', weight="bold")
+        if subtitle != None:
+            ax.set_title(subtitle, style="italic")
+
+        plt.xlabel(label, fontweight ='bold', fontsize = 13, labelpad=15)
+        plt.ylabel('Time [sec]', fontweight ='bold', fontsize = 13, labelpad=15)
+        plt.xticks([r + barWidth for r in range(len(plot_data[0]))], groups)
+
+        plt.legend()
+        plt.savefig("/home/house/AuctionFog/output/plots/compare_{}_processingtime.png".format(graph_filename), bbox_inches='tight')
+
     def graph_completion_time(self, run_filename, graph_filename=None, subtitle=None):
         if graph_filename == None:
             graph_filename = run_filename
