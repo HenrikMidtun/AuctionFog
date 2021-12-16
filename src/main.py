@@ -112,16 +112,21 @@ net3 = {
         4: [12,13,14]
     }
 
-#request_monitor = RequestMonitor()
-#node_controller = NodeController(request_monitor=request_monitor)
-#network_controller = NetworkController(node_controller)
+request_monitor = RequestMonitor()
+node_controller = NodeController(request_monitor=request_monitor)
+network_controller = NetworkController(node_controller)
 bar_grapher = BarGrapher()
 
-run_sources = ["bids/Net1Runs500Meanbid30SD20", "bids/Net1Runs500Meanbid50SD20", "bids/Net1Runs500Meanbid70SD20"]
+filename = "default"
+subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, Asking Price=50, k=0.5"
 
-subtitle = "Network 1, 500 runs, Asking Price=50, SD=20, k=0.5"
-#run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
-bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="meanbid", label="Mean Bid Size", groups=[30,50,70], subtitle=subtitle)
-bar_grapher.graph_comparison_proc_t(run_sources=run_sources, graph_filename="meanbid", label="Mean Bid Size", groups=[30,50,70], subtitle=subtitle)
-#bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
-#bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
+run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
+bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
+bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
+
+#run_sources = ["ap/Net1Runs500Meanbid50SD20AP30", "ap/Net1Runs500Meanbid50SD20", "ap/Net1Runs500Meanbid50SD20AP70"]
+
+#subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, k=0.5"
+
+#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="ap", label="Asking Price of Requests", groups=[30,50,70], subtitle=subtitle)
+#bar_grapher.graph_comparison_proc_t(run_sources=run_sources, graph_filename="ap", label="Asking Price of Requests", groups=[30,50,70], subtitle=subtitle)
