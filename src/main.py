@@ -51,35 +51,6 @@ def run_net2(factory: NetworkController, request_monitor: RequestMonitor, filena
             print("writing for request", req)
             writer.write_request_results(filename=filename, request_id=req, n_type=n_type)
         
-"""
-Creates the first test network, a 7 node binary tree with predetermined bids
-"""
-def create_plot_net1(factory:NetworkController, request_monitor:RequestMonitor):
-    writer = RunWriter(request_monitor=request_monitor)
-
-    origin_nodes = factory.create_net1()
-    filenames = ["auction", "choice", "battistoni"]
-    name_index = 0
-    for node in origin_nodes:
-
-        client = Client(origin_node_id=node.client_id, request_monitor=request_monitor)
-
-        req_ids = []
-        for i in range(10):
-            req_id = client.make_request(service="A")
-            req_ids.append(req_id)
-
-        sleep(7)
-
-        writer.set_active_filename(filename=filenames[name_index])
-
-        for req in req_ids:
-            writer.write_request_results(request_id=req)
-
-        
-        bar_grapher.create_bar_graph(filenames[name_index], filenames[name_index])
-        name_index += 1
-        sleep(3)
 
 net1 = {
         0: [1,2],
@@ -112,21 +83,21 @@ net3 = {
         4: [12,13,14]
     }
 
-request_monitor = RequestMonitor()
-node_controller = NodeController(request_monitor=request_monitor)
-network_controller = NetworkController(node_controller)
-bar_grapher = BarGrapher()
+#request_monitor = RequestMonitor()
+#node_controller = NodeController(request_monitor=request_monitor)
+#network_controller = NetworkController(node_controller)
+#bar_grapher = BarGrapher()
 
-filename = "default"
-subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, Asking Price=50, k=0.5"
+#filename = "default"
+#subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, Asking Price=50, k=0.5"
 
-run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
-bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
-bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
+#run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
+#bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
+#bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
 
-#run_sources = ["ap/Net1Runs500Meanbid50SD20AP30", "ap/Net1Runs500Meanbid50SD20", "ap/Net1Runs500Meanbid50SD20AP70"]
+#run_sources = []
+#subtitle = ""
+#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
+#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
+#bar_grapher.graph_comparison_proc_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 
-#subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, k=0.5"
-
-#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="ap", label="Asking Price of Requests", groups=[30,50,70], subtitle=subtitle)
-#bar_grapher.graph_comparison_proc_t(run_sources=run_sources, graph_filename="ap", label="Asking Price of Requests", groups=[30,50,70], subtitle=subtitle)

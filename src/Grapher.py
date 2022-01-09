@@ -173,3 +173,53 @@ class BarGrapher:
                 data[n_type]["avg_processing_time"] = (data[n_type]["avg_processing_time"]*counter[n_type]+total_processing_time_t_delta)/(counter[n_type]+1)
                 counter[n_type] = counter[n_type]+1
         return data
+
+
+def findMinMaxValueForSession(session_fn=None):
+    session_fn="bids/Net1Runs500Meanbid30SD20"
+    run_folder = "/home/house/AuctionFog/output/runs"
+
+    with open("{}/{}.csv".format(run_folder, session_fn), 'r') as f:
+        reader = csv.reader(f)
+        next(reader)
+        data = {
+            "auction": {
+                "pt":[],
+                "ct":[]
+            },
+            "choice": {
+                "pt":[],
+                "ct":[]
+            },
+            "battistoni": {
+                "pt":[],
+                "ct":[]
+            }
+        }
+        for line in reader:
+            n_type = line[0]
+
+            completion_time_str = line[2]
+            completion_time_d_time =  datetime.strptime(completion_time_str,"%H:%M:%S.%f")
+            completion_time_t_delta = timedelta(
+                hours=completion_time_d_time.hour, 
+                minutes=completion_time_d_time.minute, 
+                seconds=completion_time_d_time.second, 
+                microseconds=completion_time_d_time.microsecond)
+
+            total_processing_time_str = line[3]
+            total_processing_time_datetime_obj =  datetime.strptime(total_processing_time_str,"%H:%M:%S.%f")
+            total_processing_time_timedelta_obj = timedelta(
+                hours=total_processing_time_datetime_obj.hour, 
+                minutes=total_processing_time_datetime_obj.minute, 
+                seconds=total_processing_time_datetime_obj.second, 
+                microseconds=total_processing_time_datetime_obj.microsecond)
+            total_processing_time_seconds = total_processing_time_timedelta_obj.total_seconds()
+            data[n_type]["pt"].append(total_processing_time_seconds)
+    processing_times = len(data["auction"]["pt"])
+    return processing_times
+
+def min_max():
+    pass
+
+print(findMinMaxValueForSession())
