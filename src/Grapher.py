@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import csv
 from datetime import datetime, timedelta
 import numpy as np
-import statistics
+
 
 class BarGrapher:
 
@@ -176,91 +176,4 @@ class BarGrapher:
         return data
 
 
-def findMinMaxSDValuesForSession(session_file=None):
-    session_folder = "/home/house/AuctionFog/output/sessions"
 
-    with open("{}/{}.csv".format(session_folder, session_file), 'r') as f:
-        reader = csv.reader(f)
-        next(reader)
-        data = {
-            "auction": {
-                "pt":[],
-                "ct":[]
-            },
-            "choice": {
-                "pt":[],
-                "ct":[]
-            },
-            "battistoni": {
-                "pt":[],
-                "ct":[]
-            }
-        }
-        for line in reader:
-            n_type = line[0]
-
-            completion_time_str = line[2]
-            completion_time_datetime_obj =  datetime.strptime(completion_time_str,"%H:%M:%S.%f")
-            completion_time_timedelta_obj = timedelta(
-                hours=completion_time_datetime_obj.hour, 
-                minutes=completion_time_datetime_obj.minute, 
-                seconds=completion_time_datetime_obj.second, 
-                microseconds=completion_time_datetime_obj.microsecond)
-            completion_time_seconds = completion_time_timedelta_obj.total_seconds()
-            data[n_type]["ct"].append(completion_time_seconds)
-            total_processing_time_str = line[3]
-            total_processing_time_datetime_obj =  datetime.strptime(total_processing_time_str,"%H:%M:%S.%f")
-            total_processing_time_timedelta_obj = timedelta(
-                hours=total_processing_time_datetime_obj.hour, 
-                minutes=total_processing_time_datetime_obj.minute, 
-                seconds=total_processing_time_datetime_obj.second, 
-                microseconds=total_processing_time_datetime_obj.microsecond)
-            total_processing_time_seconds = total_processing_time_timedelta_obj.total_seconds()
-            data[n_type]["pt"].append(total_processing_time_seconds)
-    max_pt_auction = max(data["auction"]["pt"])
-    max_pt_choice = max(data["choice"]["pt"])
-    max_pt_batt = max(data["battistoni"]["pt"])
-    min_pt_auction = min(data["auction"]["pt"])
-    min_pt_choice = min(data["choice"]["pt"])
-    min_pt_batt = min(data["battistoni"]["pt"])
-    max_ct_auction = max(data["auction"]["ct"])
-    max_ct_choice = max(data["choice"]["ct"])
-    max_ct_batt = max(data["battistoni"]["ct"])
-    min_ct_auction = min(data["auction"]["ct"])
-    min_ct_choice = min(data["choice"]["ct"])
-    min_ct_batt = min(data["battistoni"]["ct"])
-    sd_pt_auction = statistics.pstdev(data["auction"]["pt"])
-    sd_ct_auction = statistics.pstdev(data["auction"]["ct"])
-    sd_pt_choice = statistics.pstdev(data["choice"]["pt"])
-    sd_ct_choice = statistics.pstdev(data["choice"]["ct"])
-    sd_pt_batt = statistics.pstdev(data["battistoni"]["pt"])
-    sd_ct_batt = statistics.pstdev(data["battistoni"]["ct"])
-    results = {
-            "auction": {
-                "max_pt":max_pt_auction,
-                "max_ct":max_ct_auction,
-                "min_pt":min_pt_auction,
-                "min_ct":min_ct_auction,
-                "sd_pt":sd_pt_auction,
-                "sd_ct":sd_ct_auction
-            },
-            "choice": {
-                "max_pt":max_pt_choice,
-                "max_ct":max_ct_choice,
-                "min_pt":min_pt_choice,
-                "min_ct":min_ct_choice,
-                "sd_pt":sd_pt_choice,
-                "sd_ct":sd_ct_choice
-            },
-            "battistoni": {
-                "max_pt":max_pt_batt,
-                "max_ct":max_ct_batt,
-                "min_pt":min_pt_batt,
-                "min_ct":min_ct_batt,
-                "sd_pt":sd_pt_batt,
-                "sd_ct":sd_ct_batt
-            }
-        }
-    return results
-
-print(findMinMaxSDValuesForSession("bids/Net1Runs500Meanbid30SD20"))

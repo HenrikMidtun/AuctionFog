@@ -5,7 +5,7 @@ from mqtt_clients.ChoiceNode import ChoiceNode
 from mqtt_clients.Client import Client
 from NodeController import NodeController
 from RequestMonitor import RequestMonitor
-from FileWriter import RunWriter
+from FileWriter import SessionWriter, AnalyticsWriter
 from Grapher import BarGrapher
 from NetworkController import NetworkController
 
@@ -42,7 +42,7 @@ def run_net2(network_controller: NetworkController, request_monitor: RequestMoni
         Write requests to file
     """
     sleep(10)
-    writer = RunWriter(request_monitor=request_monitor)
+    writer = SessionWriter(request_monitor=request_monitor)
     writer.set_headers(filename=filename)
 
     for n_type, req_ids in requests.items():
@@ -100,3 +100,8 @@ net3 = {
 #bar_grapher.graph_comparison_compl_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 #bar_grapher.graph_comparison_proc_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 
+filewriter = AnalyticsWriter()
+variable = "topology"
+sessions = {"Net1":"topology/Net1Runs500Meanbid50SD20","Net2":"topology/Net2Runs500Meanbid50SD20","Net3":"topology/Net3Runs500Meanbid50SD20"}
+
+filewriter.write_analytics_file("topology", sessions, variable)
