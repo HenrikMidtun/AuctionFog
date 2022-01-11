@@ -133,11 +133,14 @@ output/*
 !output/plots
 output/plots/*
 !output/plots/.gitkeep
-!output/runs
-output/runs/*
-!output/runs/.gitkeep
-!output/runs/bids
-!output/runs/sd
-!output/runs/topology
-!output/runs/ap
+!output/sessions
+output/sessions/*
+!output/sessions/.gitkeep
+!output/sessions/bids
+!output/sessions/sd
+!output/sessions/topology
+!output/sessions/ap
+!output/analytics
+
+
 

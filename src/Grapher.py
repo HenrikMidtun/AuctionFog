@@ -8,7 +8,7 @@ class BarGrapher:
 
     def __init__(self):
         self.folder_location = "/home/house/AuctionFog/output/plots"
-        self.run_folder = "/home/house/AuctionFog/output/runs"
+        self.session_folder = "/home/house/AuctionFog/output/sessions"
         self.run_headers = ['completion_time', 'total_processing_time']
 
     """
@@ -18,10 +18,10 @@ class BarGrapher:
         EX.    run_sources = [filename_30,filename_50,filename_70]
                groups = [30,50,70]
     """
-    def graph_comparison_compl_t(self, run_sources, graph_filename, groups, label, subtitle=None):
+    def graph_comparison_compl_t(self, session_sources, graph_filename, groups, label, subtitle=None):
         plot_data = [[],[],[]]
-        for run_file in run_sources:
-            data_t_delta = self.get_data(run_file)
+        for session_file in session_sources:
+            data_t_delta = self.get_data(session_file)
             for k,v in data_t_delta.items():
                 completion_time = v["avg_completion_time"].total_seconds()
                 if k == "auction":
@@ -52,10 +52,10 @@ class BarGrapher:
         plt.legend(bbox_to_anchor= (1.02, 1), loc="upper left")
         plt.savefig("/home/house/AuctionFog/output/plots/compare_{}_completiontime.png".format(graph_filename), bbox_inches='tight')
 
-    def graph_comparison_proc_t(self, run_sources, graph_filename, groups, label, subtitle=None):
+    def graph_comparison_proc_t(self, session_sources, graph_filename, groups, label, subtitle=None):
         plot_data = [[],[],[]]
-        for run_file in run_sources:
-            data_t_delta = self.get_data(run_file)
+        for session_file in session_sources:
+            data_t_delta = self.get_data(session_file)
             for k,v in data_t_delta.items():
                 processing_time = v["avg_processing_time"].total_seconds()
                 if k == "auction":
@@ -150,7 +150,7 @@ class BarGrapher:
                 "avg_processing_time": timedelta()
                 }
             }
-        with open("{}/{}.csv".format(self.run_folder,run_filename), 'r') as f:
+        with open("{}/{}.csv".format(self.session_folder,run_filename), 'r') as f:
             reader = csv.reader(f)
             next(reader)
             counter = {"auction": 0, "choice": 0, "battistoni": 0}
@@ -176,10 +176,10 @@ class BarGrapher:
         return data
 
 
-def findMinMaxSDValuesForSession(session_fn=None):
-    run_folder = "/home/house/AuctionFog/output/runs"
+def findMinMaxSDValuesForSession(session_file=None):
+    session_folder = "/home/house/AuctionFog/output/sessions"
 
-    with open("{}/{}.csv".format(run_folder, session_fn), 'r') as f:
+    with open("{}/{}.csv".format(session_folder, session_file), 'r') as f:
         reader = csv.reader(f)
         next(reader)
         data = {

@@ -15,7 +15,7 @@ from NetworkController import NetworkController
     Does a run in batches, because there is a max limit to how many Nodes that can run simultaneously (somewhere between 180 and 420 nodes)
     Writes the results to separate files for each type
 """
-def run_net2(factory: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all", strength=50, std_dev=15):
+def run_net2(network_controller: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all", strength=50, std_dev=15):
     """
         Create Nodes of all types and make connections according to structure
     """
@@ -95,9 +95,8 @@ net3 = {
 #bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
 #bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
 
-#run_sources = []
+#session_sources = []
 #subtitle = ""
-#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
-#bar_grapher.graph_comparison_compl_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
-#bar_grapher.graph_comparison_proc_t(run_sources=run_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
+#bar_grapher.graph_comparison_compl_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
+#bar_grapher.graph_comparison_proc_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 
