@@ -13,7 +13,7 @@ Each line includes the assigment method that was used for the run.
 class SessionWriter:
 
     def __init__(self, request_monitor:RequestMonitor):
-        self.folder_location = "/home/house/AuctionFog/output/sessions"
+        self.folder_location = "./output/sessions"
         self.request_monitor = request_monitor
         self.header = ['n_type', 'request_id', 'completion_time', 'total_processing_time']
 
@@ -34,8 +34,8 @@ class SessionWriter:
 class AnalyticsWriter:
 
     def __init__(self):
-        self.session_folder = "/home/house/AuctionFog/output/sessions"
-        self.analytics_folder = "/home/house/AuctionFog/output/analytics"
+        self.session_folder = "./output/sessions"
+        self.analytics_folder = "./output/analytics"
 
     def findMinMaxSDValuesForSession(self, session_file=None):
 
@@ -137,7 +137,7 @@ class AnalyticsWriter:
         return results
 
     def write_analytics_file(self, filename, sessions:dict, variable):
-        folder_path = "/home/house/AuctionFog/output/analytics"
+        folder_path = "./output/analytics"
         headers = ["var", "val", "type", "avg_pt", "max_pt", "min_pt", "sd_pt", "avg_ct", "max_ct", "min_ct", "sd_ct"]
 
         with open("{}/{}.csv".format(folder_path,filename), "w") as f:
