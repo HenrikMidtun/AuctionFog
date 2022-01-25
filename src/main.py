@@ -15,28 +15,28 @@ from NetworkController import NetworkController
     Does a run in batches, because there is a max limit to how many Nodes that can run simultaneously (somewhere between 180 and 420 nodes)
     Writes the results to separate files for each type
 """
-def run_sim(network_controller: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all", strength=50, std_dev=15):
+def run_sim(network_controller: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all"):
     """
         Create Nodes of all types and make connections according to structure
     """
     requests = {"auction": [], "choice": [], "battistoni": []}
     origin_nodes = {"auction":[], "choice":[], "battistoni":[]}
     for k in range(5): #Batch size, number of networks of each type run simultaneously 
-        for type, node_obj in network_controller.create_network(structure=structure, n_type=n_type, strength=strength).items():
+        for type, node_obj in network_controller.create_network(structure=structure, n_type=n_type).items():
             origin_nodes[type].append(node_obj)
 
     """
         Make Requests to origin Nodes and update all Node bids in batches.
     """
     client = Client(request_monitor=request_monitor)
-    for i in range(100): #Amount of RUNs
+    for i in range(3): #Amount of batched iterations
         for type, o_nodes in origin_nodes.items():
             for node in o_nodes:
                 req_id = client.make_request(origin_node_id=node.client_id, service="A")
                 requests[type].append(req_id)
 
         sleep(6) #Allow Nodes to finish up processes
-        network_controller.updateNetworkServices(strength=strength, std_dev=std_dev) #Update bids (and services) of Nodes
+        network_controller.updateNetworkServices(service_probabilities={"A":100}) #Update bids (and services) of Nodes
 
     """
         Write requests to file
@@ -87,7 +87,7 @@ request_monitor = RequestMonitor()
 node_controller = NodeController(request_monitor=request_monitor)
 network_controller = NetworkController(node_controller)
 filename = "default"
-run_sim(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
+run_sim(network_controller,request_monitor, structure=net1, n_type="all", filename=filename)
 
 #bar_grapher = BarGrapher()
 #subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, Asking Price=50, k=0.5"

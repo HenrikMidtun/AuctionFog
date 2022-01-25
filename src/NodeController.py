@@ -1,9 +1,9 @@
 from mqtt_clients.AuctionNode import AuctionNode
 from mqtt_clients.ChoiceNode import ChoiceNode
 from mqtt_clients.BattistoniNode import BattistoniNode
-
 import random
 from RequestMonitor import RequestMonitor
+from Configuration import Parameters
 
 class NodeController:
 
@@ -21,13 +21,13 @@ class NodeController:
 
         Creates auction, random choice, and Battistoni Nodes with equal bids.
     """
-    def createNodes(self, service_probabilities: dict, strength=50, n_type="all"):
+    def createNodes(self, service_probabilities: dict, n_type="all"):
         print(n_type)
         if n_type not in ["all","auction", "choice", "battistoni"]:
             print("{} is not a valid type ['all', 'auction', 'choice', 'battistoni'".format(n_type))
             return 
         nodes = {}
-        services = self.getRandomBids(service_probabilities=service_probabilities, strength=strength)
+        services = self.getNormalisedRandomBids(service_probabilities=service_probabilities)
         if n_type == "all":
             auction_node = AuctionNode(client_id="Node_{}".format(self.getIndex()), request_monitor=self.request_monitor, services=services)
             nodes["auction"] = auction_node
@@ -66,12 +66,12 @@ class NodeController:
     """
         Generates random bids for the given service probabilities and strength
     """
-    def getRandomBids(self, service_probabilities: dict, strength=50):
+    def getRandomBids(self, service_probabilities: dict):
         node_servicebids = {}
         for k,v in service_probabilities.items():
             decider = random.random()*100
             if decider < v:
-                node_servicebids[k] = min(int(random.randrange(100-50,100+51,1)/100*strength),100) #Setting the bidding price, may switch to std distribution
+                node_servicebids[k] = min(int(random.randrange(100-50,100+51,1)/100*Parameters.mean_bid),100) #Setting the bidding price, may switch to std distribution
         return node_servicebids
     
     """
@@ -80,21 +80,21 @@ class NodeController:
         Note, 68% of values fall within 1 standard deviation, 95% within 2 standard deviations, 99.9% within 3 standard deviations
 
     """
-    def getNormalisedRandomBids(self, service_probabilities: dict, strength=50, std_dev=15):
-        mean = strength
+    def getNormalisedRandomBids(self, service_probabilities: dict):
+        mean = Parameters.mean_bid
         node_servicebids = {}
         for k,v in service_probabilities.items():
             decider = random.random()*100
             if decider < v:
                 while True:
-                    x = round(random.normalvariate(mean, std_dev))
+                    x = round(random.normalvariate(mean, Parameters.std_dev_bids))
                     if x >= 0 and x <= 100:
                         node_servicebids[k] = x
                         break
         return node_servicebids
 
-    def updateNodeServices(self, node_objs, service_probabilities: dict, strength=50, std_dev=15):
-        node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities, strength=strength, std_dev=std_dev)
+    def updateNodeServices(self, node_objs, service_probabilities: dict):
+        node_servicebids = self.getNormalisedRandomBids(service_probabilities=service_probabilities)
         for node in node_objs:
             node.update_services(node_servicebids)
 

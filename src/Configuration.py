@@ -6,6 +6,10 @@ class Catalogue:
         "C":{"asking_price":50, "std_process_t":3}
     }
 
+class Parameters:
+    mean_bid = 50
+    std_dev_bids = 20
+
 class AuctionConfig:
     auction_period = 0.1
     joining_period = 0.1
