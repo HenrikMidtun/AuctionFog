@@ -15,7 +15,7 @@ from NetworkController import NetworkController
     Does a run in batches, because there is a max limit to how many Nodes that can run simultaneously (somewhere between 180 and 420 nodes)
     Writes the results to separate files for each type
 """
-def run_net2(network_controller: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all", strength=50, std_dev=15):
+def run_sim(network_controller: NetworkController, request_monitor: RequestMonitor, filename, structure={0: [1,2],1: [3,4],2: [5,6]} , n_type="all", strength=50, std_dev=15):
     """
         Create Nodes of all types and make connections according to structure
     """
@@ -83,15 +83,14 @@ net3 = {
         4: [12,13,14]
     }
 
-#request_monitor = RequestMonitor()
-#node_controller = NodeController(request_monitor=request_monitor)
-#network_controller = NetworkController(node_controller)
+request_monitor = RequestMonitor()
+node_controller = NodeController(request_monitor=request_monitor)
+network_controller = NetworkController(node_controller)
+filename = "default"
+run_sim(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
+
 #bar_grapher = BarGrapher()
-
-#filename = "default"
 #subtitle = "Network 1, 500 runs, Mean Bid=50, SD=20, Asking Price=50, k=0.5"
-
-#run_net2(network_controller,request_monitor, structure=net1, n_type="all", filename=filename, strength=50, std_dev=20)
 #bar_grapher.graph_completion_time(filename, filename, subtitle=subtitle)
 #bar_grapher.graph_processing_time(filename, filename, subtitle=subtitle)
 
@@ -100,8 +99,7 @@ net3 = {
 #bar_grapher.graph_comparison_compl_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 #bar_grapher.graph_comparison_proc_t(session_sources=session_sources, graph_filename="net", label="", groups=[], subtitle=subtitle)
 
-filewriter = AnalyticsWriter()
-variable = "topology"
-sessions = {"Net1":"topology/Net1Runs500Meanbid50SD20","Net2":"topology/Net2Runs500Meanbid50SD20","Net3":"topology/Net3Runs500Meanbid50SD20"}
-
-filewriter.write_analytics_file("topology", sessions, variable)
+#filewriter = AnalyticsWriter()
+#variable = "topology"
+#sessions = {"Net1":"topology/Net1Runs500Meanbid50SD20","Net2":"topology/Net2Runs500Meanbid50SD20","Net3":"topology/Net3Runs500Meanbid50SD20"}
+#filewriter.write_analytics_file("topology", sessions, variable)
