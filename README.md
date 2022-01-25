@@ -14,3 +14,15 @@ python3 -m pipenv shell
 pip install -r requirements.txt
 ```
 
+Run:
+From the root directory, run the main file with Python.
+
+The main file contains code to run a simulation for the auction, random choice, and modified Battistoni implementations on the default network.
+The results are outputted into a default file, outputs/sessions/default.csv
+
+Modify:
+Change the parameters of each run in src/configuration.py or change network topology in src/main.py
+
+The mean bid size, standard deviation of bid size, asking price of requests, and standard processing time can be set in the configuration file.
+
+The network topology is structured as a dictionary {"n_id": ["c_id"]. Each Node is given an id and a Node's neighbours are given as a list of ids.
