@@ -14,6 +14,9 @@ python3 -m pipenv shell
 pip install -r requirements.txt
 ```
 
+Install: An MQTT broker such as Mosquitto and run on localhost
+
+
 Run:
 From the root directory, run the main file with Python.
 
